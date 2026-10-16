@@ -1,19 +1,29 @@
+from datetime import datetime
 import pandas as pd
 import wbgapi as wb
 
-print("Fetching economic data for India from the World Bank...")
+print(
+    "Fetching comprehensive historical economic & structural data for India"
+    " from the World Bank..."
+)
 
 # Define parameters
 country_code = "IND"  # ISO code for India
 indicators = {
     "GDP_Growth": "NY.GDP.MKTP.KD.ZG",  # GDP growth (annual %)
     "Inflation": "FP.CPI.TOTL.ZG",  # Inflation, consumer prices (annual %)
+    "Unemployment": "SL.UEM.TOTL.ZS",  # Unemployment (% of total labor force)
+    "Mobile_Subscriptions": "IT.CEL.SETS.P2",  # Mobile cellular subscriptions (per 100 people)
+    "FDI_Inflows_Pct_GDP": "BX.KLT.DINV.WD.GD.ZS",  # Foreign direct investment, net inflows (% of GDP)
+    "Gross_Capital_Formation": "NE.GDI.TOTL.ZS",  # Gross capital formation (% of GDP - investment/infrastructure)
 }
-start_year = 2010
-end_year = 2025
+
+# Automatically set start year to World Bank's earliest records (1960)
+# and end year to the current year dynamically
+start_year = 1960
+end_year = datetime.now().year
 
 # Fetch data using wbgapi and convert to a Pandas DataFrame
-# 'mrv' or custom time range can be specified. Here we use a range from start_year to end_year
 df = wb.data.DataFrame(
     list(indicators.values()),
     country_code,
@@ -22,24 +32,31 @@ df = wb.data.DataFrame(
     columns="series",
 ).reset_index()
 
-# Clean up column headers to make them user-friendly
+# Clean up column headers to match user-friendly names
 df.rename(
     columns={
         "time": "Year",
         "NY.GDP.MKTP.KD.ZG": "GDP_Growth_Pct",
         "FP.CPI.TOTL.ZG": "Inflation_Pct",
+        "SL.UEM.TOTL.ZS": "Unemployment_Pct",
+        "IT.CEL.SETS.P2": "Mobile_Subscriptions_Per_100",
+        "BX.KLT.DINV.WD.GD.ZS": "FDI_Inflows_Pct_GDP",
+        "NE.GDI.TOTL.ZS": "Gross_Capital_Formation_Pct_GDP",
     },
     inplace=True,
 )
 
-# Sort by year
+# Sort by year in ascending order
 df = df.sort_values(by="Year", ascending=True)
 
-# Display the extracted data in the console
-print("\nExtracted Data Preview:")
-print(df.head(10))
+# Display a preview of recent data in the console logs
+print("\nExtracted Data Preview (Recent Years):")
+print(df.tail(10))
 
-# Export clean data to a CSV file (ready to load into SQL or Power BI)
+# Export comprehensive clean data to CSV file
 output_filename = "india_economic_data.csv"
 df.to_csv(output_filename, index=False)
-print(f"\nSuccess! Data saved locally to '{output_filename}'")
+print(
+    f"\nSuccess! Comprehensive historical dataset saved locally to"
+    f" '{output_filename}'"
+)
